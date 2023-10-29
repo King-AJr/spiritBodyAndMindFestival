@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -39,6 +40,9 @@ class AuthController extends Controller
 
             $saved = $user->save();
             if (!$saved) {
+                // Log an error message
+                Log::error('User registration failed.');
+
                 return response()->json([
                     'status' => 'error',
                     'message' => 'User registration failed',
@@ -48,14 +52,16 @@ class AuthController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'User registration successful',
-                'user' => $user,  // Include user data in the response if needed
+                'user' => $user,
             ], 201);
-        } catch (ValidationException $e) {
-            // Handle the validation exception for duplicate email
+        } catch (\Exception $e) {
+            // Log other exceptions
+            Log::error('An unexpected error occurred: ' . $e->getMessage());
+
             return response()->json([
                 'status' => 'error',
-                'message' => 'Email address is already in use.',
-            ], 422); // Return a 422 Unprocessable Entity status code
+                'message' => $e->getMessage(),
+            ], 422);
         }
     }
 }
