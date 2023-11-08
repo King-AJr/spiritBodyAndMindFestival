@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\TicketsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -23,3 +24,4 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 Route::post('register', [AuthController::class, 'register']);
 Route::post('payment', [PaymentController::class, 'make_payment']);
 Route::get('callback', [PaymentController::class, 'callback_fx'])->name('callback');
+Route::post('confirmTicket', [TicketsController::class, 'confirm_ticket'])->name('confirm_ticket');

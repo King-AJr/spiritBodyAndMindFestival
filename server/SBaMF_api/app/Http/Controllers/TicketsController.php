@@ -5,93 +5,57 @@ namespace App\Http\Controllers;
 use App\Models\Tickets;
 use Illuminate\Http\Request;
 use Mail;
-use App\Mail\sendTicket;
-use Illuminate\Support\Facades\Log;
 
-class PaymentController extends Controller
+class TicketsController extends Controller
 {
-    public $amount;
-
-    public function callback_fx() {
-        $res = json_decode($this->verify_payment(request('reference')));
-        if($res->status) {
-            $email = $res->data->customer->email;
-            if ($res->data->amount == 4000 * 100) {
-                $plan = "regular";
-            } elseif ($res->data->amount == 19000 * 100) {
-                $plan = "VIP";
-            }
-            elseif ($res->data->amount == 20000 * 100) {
-                $plan = "bulk_reg";
-            }
-            $this->generateTicket($email, $plan, request('reference'));
-        } else {
-            return response()->json([
-                'status' => $res->status,
-                'message' => $res->message
-            ]);
-        }
-    }
-    // not needed
-    public function make_payment() {
-        if (request('plan') == 'regular') {
-            $this->amount = 4000 * 100;
-        } elseif (request('plan') == 'VIP') {
-            $this->amount = 19000 * 100;
-        } elseif (request('plan') == 'bulk_reg') {
-            $this->amount = 20000 * 100;
-        }
-
-        $formData = [
-            'email' => request('email'),
-            'amount' => $this->amount,
-            'currency' => "NGN",
-            'callback_url' => route('callback')
-        ];
-
-        $pay = json_decode($this->initiate_payment($formData));
-        if($pay) {
-            if($pay->status) {
+    //confirm ticket
+    public function confirm_ticket() {
+        $ticket = request('reference');
+        if(strlen($ticket) == 5) {
+            $user_ticket = Tickets::where('ticket', $ticket)->first();
+            if ($user_ticket) {
                 return response()->json([
                     'status' => 'success',
-                    'message' => $pay->data->authorization_url
+                    'message' => 'here is your ticket',
+                    'ticket' => $user_ticket
                 ]);
-            } else {
+            } else{
                 return response()->json([
-                    'status' => 'error',
-                    'message' => $pay->message
-                ], 400);
+                    'status' => 'failed',
+                    'message' => "ticket does not exist",
+                    'ticket' => []
+                ]);
             }
         } else {
-            return response()->json([
-                'status' => 'error',
-                'message' => $pay->message
-            ], 400);
-            // return back()->withError("something went wrong");
+            $user_ticket = Tickets::where('reference', $ticket)->first();
+            if ($user_ticket) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'here is your ticket',
+                    'ticket' => $user_ticket
+                ]);
+            } else{
+                $res = json_decode($this->verify_payment(request('reference')));
+                if($res->status) {
+                    $email = $res->data->customer->email;
+                    if ($res->data->amount == 4000 * 100) {
+                        $plan = "regular";
+                    } elseif ($res->data->amount == 19000 * 100) {
+                        $plan = "VIP";
+                    }
+                    elseif ($res->data->amount == 20000 * 100) {
+                        $plan = "bulk_reg";
+                    }
+                    $this->generateTicket($email, $plan, request('reference'));
+                } else {
+                    return response()->json([
+                        'status' => $res->status,
+                        'message' => $res->message
+                    ]);
+                }
+            }
         }
-
     }
-
-    public function initiate_payment($formData) {
-        $url="https://api.paystack.co/transaction/initialize";
-
-        $fields_string = http_build_query($formData);
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "Authorization: Bearer ". $_ENV["PAYSTACK_SECRET_KEY"],
-            "Cache-Control: no-cache"
-        ));
-
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-        $result = curl_exec($ch);
-        curl_close($ch);
-        return $result;
-    }
-//not needed
 
     public function verify_payment($reference) {
         $curl = curl_init();
@@ -240,5 +204,3 @@ class PaymentController extends Controller
 
     }
 }
-
-
