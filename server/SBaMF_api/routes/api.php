@@ -25,3 +25,4 @@ Route::post('register', [AuthController::class, 'register']);
 Route::post('payment', [PaymentController::class, 'make_payment']);
 Route::get('callback', [PaymentController::class, 'callback_fx'])->name('callback');
 Route::post('confirmTicket', [TicketsController::class, 'confirm_ticket'])->name('confirm_ticket');
+Route::post('verify_payment', [PaymentController::class, 'verify'])->name('verify');
