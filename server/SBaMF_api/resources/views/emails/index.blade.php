@@ -41,7 +41,7 @@
         <p>Ticket Type: {{ $mailData['Ticket_type'] }}</p>
         <p>Number of Tickets: {{ $mailData['Number_of_tickets'] }}</p>
         <p>Ticket ID: {{ $mailData['Ticket_id'] }}</p>
-        <p>Questions? Contact us at +2348064529494.</p>
+        <p>Questions? Contact us at +2349157611144.</p>
         <br>
         <p>Can't wait to see you there!</p>
     </div>
