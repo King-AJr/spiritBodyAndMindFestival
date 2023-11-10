@@ -1,6 +1,0 @@
-{
-    "name": "SpiritMindBodyFestival",
-    "version": "1.0.0",
-    "buildCommand": "composer install && npm install && npm run prod",
-    "outputDirectory": "public"
-  }
